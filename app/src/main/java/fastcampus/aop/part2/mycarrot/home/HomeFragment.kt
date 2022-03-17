@@ -18,7 +18,7 @@ import fastcampus.aop.part2.mycarrot.DBKey.Companion.CHILD_CHAT
 import fastcampus.aop.part2.mycarrot.DBKey.Companion.DB_ARTICLES
 import fastcampus.aop.part2.mycarrot.DBKey.Companion.DB_USERS
 import fastcampus.aop.part2.mycarrot.R
-import fastcampus.aop.part2.mycarrot.charlist.ChatListItem
+import fastcampus.aop.part2.mycarrot.chatlist.ChatListItem
 import fastcampus.aop.part2.mycarrot.databinding.FragmentHomeBinding
 
 class HomeFragment: Fragment(R.layout.fragment_home) {

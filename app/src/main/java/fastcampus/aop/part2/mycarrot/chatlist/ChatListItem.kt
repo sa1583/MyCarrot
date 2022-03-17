@@ -1,4 +1,4 @@
-package fastcampus.aop.part2.mycarrot.charlist
+package fastcampus.aop.part2.mycarrot.chatlist
 
 data class ChatListItem(
     val buyerId: String,

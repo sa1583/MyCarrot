@@ -4,7 +4,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
-import fastcampus.aop.part2.mycarrot.charlist.ChatListFragment
+import fastcampus.aop.part2.mycarrot.chatlist.ChatListFragment
 import fastcampus.aop.part2.mycarrot.databinding.ActivityMainBinding
 import fastcampus.aop.part2.mycarrot.home.HomeFragment
 import fastcampus.aop.part2.mycarrot.mypage.MyPageFragment
