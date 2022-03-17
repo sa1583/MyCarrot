@@ -15,4 +15,12 @@
     <string name="need_permission_message">사진을 가져오기 위해 필요합니다</string>
     <string name="agree">동의</string>
     <string name="image_upload_fail">사진 업로드에 실패했습니다</string>
+    <string name="sign_up">회원가입</string>
+    <string name="login">로그인</string>
+    <string name="logout">로그아웃</string>
+    <string name="login_fail">로그인에 실패했습니다. 이메일 또는 비밀번호를 확인해 주세요.</string>
+    <string name="login_fail_exception">로그인에 실패했습니다. 다시 시도해 주세요.</string>
+    <string name="temperal_password">*********</string>
+    <string name="sign_up_success">회원가입에 성공했습니다. 로그인 버튼을 눌러주세요.</string>
+    <string name="sign_up_fail">회원가입에 실패했습니다. 이미 가입한 이메일일 수 있습니다.</string>
 </resources>

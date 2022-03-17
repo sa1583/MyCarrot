@@ -61,15 +61,12 @@ class HomeFragment: Fragment(R.layout.fragment_home) {
         fragmentHomeBinding.articleRecyclerVIew.adapter = articleAdapter
 
         fragmentHomeBinding.addFloatingButton.setOnClickListener {
-            // todo 로그인 기능 필요
-            val intent = Intent(requireContext(), AddArticleActivity::class.java)
-            startActivity(intent)
-//            if (auth.currentUser != null) {
-//                val intent = Intent(requireContext(), AddArticleActivity::class.java)
-//                startActivity(intent)
-//            } else {
-//                Snackbar.make(view, getString(R.string.need_login), Snackbar.LENGTH_SHORT).show()
-//            }
+            if (auth.currentUser != null) {
+                val intent = Intent(requireContext(), AddArticleActivity::class.java)
+                startActivity(intent)
+            } else {
+                Snackbar.make(view, getString(R.string.need_login), Snackbar.LENGTH_SHORT).show()
+            }
         }
         articleDB.addChildEventListener(listener)
     }
