@@ -6,9 +6,11 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.DatabaseReference
@@ -61,11 +63,63 @@ class AddArticleActivity : AppCompatActivity() {
             val price = binding.priceEditText.text.toString()
             val sellerId = auth.currentUser?.uid.orEmpty()
 
-            val model = ArticleModel(sellerId, title, System.currentTimeMillis(), "$price 원", "")
-            articleDB.push().setValue(model)
+            showProgress()
 
-            finish()
+            if (selectedUri != null) {
+                val photoUri = selectedUri ?: return@setOnClickListener
+                uploadPhoto(photoUri,
+                    successHandler = { uri ->
+                        uploadArticle(sellerId, title, price, uri)
+                    },
+                    errorHandler = {
+                        Toast.makeText(this, getString(R.string.image_upload_fail), Toast.LENGTH_SHORT).show()
+                        hideProgress()
+                    }
+                )
+            } else {
+                uploadArticle(sellerId, title, price, "")
+            }
         }
+    }
+
+    private fun uploadPhoto(uri: Uri, successHandler: (String) -> Unit, errorHandler: () -> Unit) {
+        val fileName = "${System.currentTimeMillis()}.png"
+        storage.reference.child("article/photo").child(fileName)
+            .putFile(uri)
+            .addOnCompleteListener {
+                if (it.isSuccessful) {
+                    storage.reference.child("article/photo").child(fileName)
+                        .downloadUrl
+                        .addOnSuccessListener { uri ->
+                            successHandler(uri.toString())
+                        }.addOnFailureListener {
+                            errorHandler()
+                        }
+                } else {
+                    errorHandler()
+                }
+            }
+    }
+
+    private fun uploadArticle(sellerId: String, title: String, price: String, imageUrl: String) {
+        val model = ArticleModel(sellerId, title, System.currentTimeMillis(), "$price 원", imageUrl)
+        articleDB.push().setValue(model)
+        hideProgress()
+        finish()
+    }
+
+    private fun startContentProvider() {
+        val intent = Intent(Intent.ACTION_GET_CONTENT)
+        intent.type = "image/*"
+        startActivityForResult(intent, 2020)
+    }
+
+    private fun showProgress() {
+        binding.progressBar.isVisible = true
+    }
+
+    private fun hideProgress() {
+        binding.progressBar.isVisible = false
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -80,12 +134,6 @@ class AddArticleActivity : AppCompatActivity() {
                     }
                 }
         }
-    }
-
-    private fun startContentProvider() {
-        val intent = Intent(Intent.ACTION_GET_CONTENT)
-        intent.type = "image/*"
-        startActivityForResult(intent, 2020)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
