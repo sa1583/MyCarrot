@@ -6,65 +6,73 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.ktx.database
+import com.google.firebase.ktx.Firebase
+import fastcampus.aop.part2.mycarrot.DBKey.Companion.CHILD_CHAT
+import fastcampus.aop.part2.mycarrot.DBKey.Companion.DB_USERS
 import fastcampus.aop.part2.mycarrot.R
+import fastcampus.aop.part2.mycarrot.databinding.FragmentChatListBinding
 
 class ChatListFragment: Fragment(R.layout.fragment_chat_list) {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        Log.d(TAG, "onCreate")
-    }
+    private var binding: FragmentChatListBinding? = null
+    private lateinit var chatListAdapter: ChatListAdapter
+    private val chatRoomList = mutableListOf<ChatListItem>()
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        Log.d(TAG, "onCreateView")
-        return super.onCreateView(inflater, container, savedInstanceState)
+    private val auth: FirebaseAuth by lazy {
+        Firebase.auth
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        Log.d(TAG, "onViewCreated")
-    }
 
-    override fun onViewStateRestored(savedInstanceState: Bundle?) {
-        super.onViewStateRestored(savedInstanceState)
-        Log.d(TAG, "onViewStateRestored")
-    }
+        val fragmentChatListBinding = FragmentChatListBinding.bind(view)
+        binding = fragmentChatListBinding
 
-    override fun onStart() {
-        super.onStart()
-        Log.d(TAG, "onStart")
+        chatListAdapter = ChatListAdapter(onItemClicked =  {
+            // 채팅방으로 이동
+        })
+
+        chatRoomList.clear()
+
+        fragmentChatListBinding.chatListRecyclerView.layoutManager = LinearLayoutManager(context)
+        fragmentChatListBinding.chatListRecyclerView.adapter = chatListAdapter
+
+        if (auth.currentUser == null) {
+            return
+        }
+
+        val chatDB = Firebase.database.reference.child(DB_USERS).child(auth.currentUser!!.uid).child(CHILD_CHAT)
+
+        chatDB.addListenerForSingleValueEvent(object: ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                snapshot.children.forEach {
+                    val model = it.getValue(ChatListItem::class.java)
+                    model ?: return
+
+                    chatRoomList.add(model)
+                }
+
+                chatListAdapter.submitList(chatRoomList)
+                chatListAdapter.notifyDataSetChanged()
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+
+            }
+        })
+
     }
 
     override fun onResume() {
         super.onResume()
-        Log.d(TAG, "onResume")
-    }
 
-    override fun onPause() {
-        super.onPause()
-        Log.d(TAG, "onPause")
-    }
-
-    override fun onStop() {
-        super.onStop()
-        Log.d(TAG, "onStop")
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        Log.d(TAG, "onSaveInstanceState")
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        Log.d(TAG, "onDestroyView");
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        Log.d(TAG, "onDestroy: ")
-    }
-
-    companion object {
-        private const val TAG = "LifeCycle: ChatListFragment"
+        chatListAdapter.notifyDataSetChanged()
     }
 }

@@ -14,15 +14,19 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
+import fastcampus.aop.part2.mycarrot.DBKey.Companion.CHILD_CHAT
 import fastcampus.aop.part2.mycarrot.DBKey.Companion.DB_ARTICLES
+import fastcampus.aop.part2.mycarrot.DBKey.Companion.DB_USERS
 import fastcampus.aop.part2.mycarrot.R
+import fastcampus.aop.part2.mycarrot.charlist.ChatListItem
 import fastcampus.aop.part2.mycarrot.databinding.FragmentHomeBinding
 
 class HomeFragment: Fragment(R.layout.fragment_home) {
     private lateinit var articleDB: DatabaseReference
+    private lateinit var userDB: DatabaseReference
     private lateinit var articleAdapter: ArticleAdapter
 
-    private val articleList = mutableListOf<ArticleModel>()
+    private val articleList = mutableListOf<fastcampus.aop.part2.mycarrot.home.ArticleModel>()
     private val listener = object: ChildEventListener {
         override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
             val articleModel = snapshot.getValue(ArticleModel::class.java)
@@ -55,7 +59,36 @@ class HomeFragment: Fragment(R.layout.fragment_home) {
 
         articleList.clear()
         articleDB = Firebase.database.reference.child(DB_ARTICLES)
-        articleAdapter = ArticleAdapter()
+        userDB = Firebase.database.reference.child(DB_USERS)
+        articleAdapter = ArticleAdapter(onItemClicked = { articleModel ->
+            if (auth.currentUser != null) {
+                if (auth.currentUser!!.uid != articleModel.sellerId) {
+                    val chatRoom = ChatListItem(
+                        buyerId = auth.currentUser!!.uid,
+                        sellerId = articleModel.sellerId,
+                        itemTitle = articleModel.title,
+                        key = System.currentTimeMillis()
+                    )
+                    userDB.child(auth.currentUser!!.uid)
+                        .child(CHILD_CHAT)
+                        .push()
+                        .setValue(chatRoom)
+
+                    userDB.child(articleModel.sellerId)
+                        .child(CHILD_CHAT)
+                        .push()
+                        .setValue(chatRoom)
+
+                    Snackbar.make(view, getString(R.string.chat_room_success), Snackbar.LENGTH_SHORT).show()
+
+                } else {
+                    Snackbar.make(view, getString(R.string.my_item), Snackbar.LENGTH_SHORT).show()
+                }
+            } else {
+                Snackbar.make(view, getString(R.string.need_login), Snackbar.LENGTH_SHORT).show()
+            }
+
+        })
 
         fragmentHomeBinding.articleRecyclerVIew.layoutManager = LinearLayoutManager(context)
         fragmentHomeBinding.articleRecyclerVIew.adapter = articleAdapter
